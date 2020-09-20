@@ -116,6 +116,6 @@ set(CUML_INCLUDE_DIRECTORIES
 ##############################################################################
 # - build count ------------------------------------------------------------
 add_executable(count
-    count/main.cu)
+    src/count/main.cu)
 
 target_include_directories(count PRIVATE ${LEARNING_CUDA_INCLUDE_DIR})
