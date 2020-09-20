@@ -1,8 +1,8 @@
 set (CMAKE_FIND_NO_INSTALL_PREFIX TRUE FORCE)
 
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
-project(LEARNING_CUDA VERSION 0.1.0 LANGUAGES C CXX CUDA)
+project(LEARNING_CUDA VERSION 0.1.0 LANGUAGES CXX CUDA)
 
 ##############################################################################
 # - build type ---------------------------------------------------------------
@@ -65,53 +65,19 @@ set(LEARNING_CUDA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE STRING
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 14)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
-if(CMAKE_CUDA_HOST_COMPILER)
-  # If CMAKE_CUDA_HOST_COMPILER is set to a nonempty string cmake was called with the environment variable CUDAHOSTCXX set or -DCMAKE_CUDA_HOST_COMPILER
-  if(NOT CMAKE_CUDA_HOST_COMPILER STREQUAL CMAKE_CXX_COMPILER)
-    message(WARNING "CMAKE_CUDA_HOST_COMPILER=${CMAKE_CUDA_HOST_COMPILER} and CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} are inconsistent!")
-  endif(NOT CMAKE_CUDA_HOST_COMPILER STREQUAL CMAKE_CXX_COMPILER)
-else()
-  # No attempt to set CMAKE_CUDA_HOST_COMPILER has been made. Make sure CMAKE_CXX_COMPILER is used as CUDA host compiler.
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -ccbin ${CMAKE_CXX_COMPILER}")
-endif(CMAKE_CUDA_HOST_COMPILER)
-
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
-
-if(${CMAKE_VERSION} VERSION_LESS "3.17.0")
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --std=c++14")
-endif(${CMAKE_VERSION} VERSION_LESS "3.17.0")
-
-include(cmake/EvalGpuArchs.cmake)
-evaluate_gpu_archs(GPU_ARCHS)
-
-foreach(arch ${GPU_ARCHS})
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode arch=compute_${arch},code=sm_${arch}")
-  set(FAISS_GPU_ARCHS "${FAISS_GPU_ARCHS} -gencode arch=compute_${arch},code=sm_${arch}")
-endforeach()
-
-list(GET GPU_ARCHS -1 ptx)
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode arch=compute_${ptx},code=compute_${ptx}")
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-  if(NOT CMAKE_CXX11_ABI)
-    message(STATUS "Disabling the GLIBCXX11 ABI")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -D_GLIBCXX_USE_CXX11_ABI=0")
-  elseif(CMAKE_CXX11_ABI)
-    message(STATUS "Enabling the GLIBCXX11 ABI")
-  endif(NOT CMAKE_CXX11_ABI)
-endif(CMAKE_COMPILER_IS_GNUCXX)
-
-set(CMAKE_CUDA_FLAGS
-  "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=unrecognized_gcc_pragma")
+set(CMAKE_CUDA_ARCHITECTURES
+    70
+    75)
 
 ##############################################################################
 # - include paths ------------------------------------------------------------
 
 set(LEARNING_CUDA_INCLUDE_DIRECTORIES
-    ${LEARNING_CUDA_INCLUDE_DIR})
+    ${LEARNING_CUDA_INCLUDE_DIR}
+    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 ##############################################################################
 # - build count ------------------------------------------------------------
