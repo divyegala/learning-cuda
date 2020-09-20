@@ -110,7 +110,7 @@ set(CMAKE_CUDA_FLAGS
 ##############################################################################
 # - include paths ------------------------------------------------------------
 
-set(CUML_INCLUDE_DIRECTORIES
+set(LEARNING_CUDA_INCLUDE_DIRECTORIES
     ${LEARNING_CUDA_INCLUDE_DIR})
 
 ##############################################################################
@@ -118,4 +118,4 @@ set(CUML_INCLUDE_DIRECTORIES
 add_executable(count
     src/count/main.cu)
 
-target_include_directories(count PRIVATE ${LEARNING_CUDA_INCLUDE_DIR})
+target_include_directories(count PRIVATE ${LEARNING_CUDA_INCLUDE_DIRECTORIES})
