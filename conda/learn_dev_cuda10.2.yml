@@ -1,0 +1,4 @@
+name: learn_dev
+dependencies:
+- cmake>=3.14
+- cudatoolkit=10.2
