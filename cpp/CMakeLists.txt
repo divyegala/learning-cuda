@@ -72,6 +72,8 @@ set(CMAKE_CUDA_ARCHITECTURES
     70
     75)
 
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
+
 ##############################################################################
 # - include paths ------------------------------------------------------------
 
