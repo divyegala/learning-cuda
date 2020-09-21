@@ -8,7 +8,7 @@
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 
-#include "count_impl.cuh"
+#include <learning_cuda/count/count.cuh>
 
 
 int main() {
