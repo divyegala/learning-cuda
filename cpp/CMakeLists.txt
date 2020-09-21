@@ -84,6 +84,6 @@ set(LEARNING_CUDA_INCLUDE_DIRECTORIES
 ##############################################################################
 # - build count ------------------------------------------------------------
 add_executable(count
-    src/count/main.cu)
+    src/count/count.cu)
 
 target_include_directories(count PRIVATE ${LEARNING_CUDA_INCLUDE_DIRECTORIES})
