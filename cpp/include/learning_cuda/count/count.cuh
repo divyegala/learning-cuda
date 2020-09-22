@@ -53,3 +53,39 @@ int count_if(T* arr, int size,
 }
 
 } // namespace manual_reduction
+
+namespace syncthreads_count_reduction {
+
+template <typename T, class F>
+int count_if(T* arr, int size,
+                F count_if_op) {
+    int *count_d, count_h, N_BLK;
+
+    common::_prep_count_if(&count_d, N_BLK, size);
+
+    count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
+
+    common::_finish_count_if(&count_d, count_h);
+
+    return count_h;
+}
+
+} // namespace syncthreads_count_reduction
+
+namespace ballot_sync_reduction {
+
+template <typename T, class F>
+int count_if(T* arr, int size,
+                F count_if_op) {
+    int *count_d, count_h, N_BLK;
+
+    common::_prep_count_if(&count_d, N_BLK, size);
+
+    count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
+
+    common::_finish_count_if(&count_d, count_h);
+
+    return count_h;
+}
+
+} // namespace ballot_count_reduction

@@ -12,7 +12,7 @@
 
 
 int main() {
-    int n_elems = 100000;
+    int n_elems = 1000;
 
     thrust::device_vector<int> rand_d(n_elems, 0);
 
@@ -38,10 +38,20 @@ int main() {
 
     std::cout << "\nNaive Count: " << naive_count << std::endl;
 
-    int man_red_count = naive::count_if(thrust::raw_pointer_cast(rand_d.data()),
+    int man_count = manual_reduction::count_if(thrust::raw_pointer_cast(rand_d.data()),
     n_elems, is_greater_than_10);
 
-    std::cout << "\nManual Reduction Count: " << man_red_count << std::endl;
+    std::cout << "\nManual Reduction Count: " << man_count << std::endl;
+
+    int syn_count = syncthreads_count_reduction::count_if(thrust::raw_pointer_cast(rand_d.data()),
+    n_elems, is_greater_than_10);
+
+    std::cout << "\nSyncthread Reduction Count: " << syn_count << std::endl;
+
+    int bal_count = ballot_sync_reduction::count_if(thrust::raw_pointer_cast(rand_d.data()),
+    n_elems, is_greater_than_10);
+
+    std::cout << "\nBallot Reduction Count: " << bal_count << std::endl;
 
     return 0;
 }
