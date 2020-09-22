@@ -38,5 +38,10 @@ int main() {
 
     std::cout << "\nNaive Count: " << naive_count << std::endl;
 
+    int man_red_count = naive::count_if(thrust::raw_pointer_cast(rand_d.data()),
+    n_elems, is_greater_than_10);
+
+    std::cout << "\nManual Reduction Count: " << man_red_count << std::endl;
+
     return 0;
 }
