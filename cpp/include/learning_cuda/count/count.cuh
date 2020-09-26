@@ -1,9 +1,10 @@
-#include "count_kernels.cuh"
+#pragma once
 
-#define TPB 32
+#include "count_kernels.cuh"
 
 namespace common {
 
+template <int TPB>
 void _prep_count_if(int **count_d, int &N_BLK, int size) {
     cudaMalloc(count_d, sizeof(int));
     cudaMemset(*count_d, 0, sizeof(int));
@@ -20,14 +21,16 @@ void _finish_count_if(int **count_d, int &count_h) {
 
 namespace naive {
 
-template <typename T, class F>
-int count_if(T* arr, int size,
-             F count_if_op) {
+template <typename T, int TPB, typename CountIfOp>
+inline int count_if(T* arr, int size, CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
-    common::_prep_count_if(&count_d, N_BLK, size);
+    common::_prep_count_if<TPB> (&count_d, N_BLK, size);
 
-    count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
+    std:: cout << "TPB: " << TPB << "\n";
+    std:: cout << "N_BLK: " << N_BLK << "\n";
+    std:: cout << "size: " << size << "\n";
+    detail::count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
 
     common::_finish_count_if(&count_d, count_h);
 
@@ -38,14 +41,15 @@ int count_if(T* arr, int size,
 
 namespace manual_reduction {
 
-template <typename T, class F>
-int count_if(T* arr, int size,
-             F count_if_op) {
+template <typename T, int TPB, typename CountIfOp>
+inline int count_if(T* arr, int size,
+                    CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
-    common::_prep_count_if(&count_d, N_BLK, size);
+    common::_prep_count_if<TPB> (&count_d, N_BLK, size);
 
-    count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
+    detail::count_kernel<T, TPB> <<<N_BLK, TPB>>> (arr, size, count_d,
+                                                   count_if_op);
 
     common::_finish_count_if(&count_d, count_h);
 
@@ -56,14 +60,14 @@ int count_if(T* arr, int size,
 
 namespace syncthreads_count_reduction {
 
-template <typename T, class F>
-int count_if(T* arr, int size,
-                F count_if_op) {
+template <typename T, int TPB, typename CountIfOp>
+inline int count_if(T* arr, int size,
+                    CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
-    common::_prep_count_if(&count_d, N_BLK, size);
+    common::_prep_count_if<TPB> (&count_d, N_BLK, size);
 
-    count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
+    detail::count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
 
     common::_finish_count_if(&count_d, count_h);
 
@@ -74,14 +78,15 @@ int count_if(T* arr, int size,
 
 namespace ballot_sync_reduction {
 
-template <typename T, class F>
-int count_if(T* arr, int size,
-                F count_if_op) {
+template <typename T, int TPB, typename CountIfOp>
+inline int count_if(T* arr, int size,
+                    CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
-    common::_prep_count_if(&count_d, N_BLK, size);
+    common::_prep_count_if<TPB> (&count_d, N_BLK, size);
 
-    count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
+    detail::count_kernel<T, TPB> <<<N_BLK, TPB>>> (arr, size, count_d,
+                                                   count_if_op);
 
     common::_finish_count_if(&count_d, count_h);
 
