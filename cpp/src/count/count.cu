@@ -12,7 +12,7 @@
 
 
 int main() {
-    int n_elems = 100;
+    int n_elems = 10000000;
 
     thrust::device_vector<int> rand_d(n_elems, 0);
 
@@ -28,6 +28,7 @@ int main() {
         return (x > 10 ? true : false);
     };
 
+    cudaDeviceSynchronize();
     int thrust_count = thrust::count_if(thrust::device, rand_d.begin(),
                                         rand_d.end(), is_greater_than_10);
     
@@ -35,23 +36,27 @@ int main() {
     
     int *rand_d_ptr = thrust::raw_pointer_cast(rand_d.data());
 
-    int naive_count = naive::count_if<int, 32>(rand_d_ptr, n_elems,
-                                               is_greater_than_10);
+    cudaDeviceSynchronize();
+    int naive_count = naive::count_if<int, 64>(rand_d_ptr, n_elems,
+                                                is_greater_than_10);
 
     std::cout << "\nNaive Count: " << naive_count << std::endl;
 
-    int man_count = manual_reduction::count_if<int, 32>(rand_d_ptr, n_elems,
-                                                        is_greater_than_10);
+    cudaDeviceSynchronize();
+    int man_count = manual_reduction::count_if<int, 64>(rand_d_ptr, n_elems,
+                                                         is_greater_than_10);
 
     std::cout << "\nManual Reduction Count: " << man_count << std::endl;
 
-    int syn_count = syncthreads_count_reduction::count_if<int, 32>(rand_d_ptr,
+    cudaDeviceSynchronize();
+    int syn_count = syncthreads_count_reduction::count_if<int, 64>(rand_d_ptr,
                                                                    n_elems,
                                                                    is_greater_than_10);
 
     std::cout << "\nSyncthread Reduction Count: " << syn_count << std::endl;
 
-    int bal_count = ballot_sync_reduction::count_if<int, 32>(rand_d_ptr, 
+    cudaDeviceSynchronize();
+    int bal_count = ballot_sync_reduction::count_if<int, 64>(rand_d_ptr, 
                                                              n_elems,
                                                              is_greater_than_10);
 

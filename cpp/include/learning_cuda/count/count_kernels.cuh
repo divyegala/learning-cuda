@@ -29,7 +29,7 @@ __global__
 void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
-    __shared__ unsigned int local_count_array[TPB];
+    __shared__ int local_count_array[TPB];
 
     if (tid < size) {
         if (count_if_op(arr[tid])) {
@@ -44,11 +44,11 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
         for (int offset = blockDim.x / 2; offset > 0; offset >>=1 ) {
             if (threadIdx.x < offset && tid + offset < size) {
                 local_count_array[threadIdx.x] += local_count_array[threadIdx.x + offset];
-                __syncthreads();
             }
+            __syncthreads();
         }
 
-        if(threadIdx.x == 0) {
+        if (threadIdx.x == 0) {
             atomicAdd(count, local_count_array[threadIdx.x]);
         }
     }
@@ -69,7 +69,7 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
 
     int block_count = __syncthreads_count(predicate);
 
-    if(threadIdx.x == 0) {
+    if (threadIdx.x == 0) {
         atomicAdd(count, block_count);
     }
     
@@ -93,8 +93,34 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
     unsigned ballot_mask = __ballot_sync(FULL_MASK, predicate);
     int warp_count = __popc(ballot_mask);
 
-    if(threadIdx.x % 32 == 0) {
-        atomicAdd(count, warp_count);
+    // global atomics
+    // if(threadIdx.x == 0) {
+    //     atomicAdd(count, warp_count);
+    // }
+
+
+    // optimization for block reduction
+    __shared__ int block_counts[TPB / 32];
+
+    if (tid < size) {
+        int warp_id = threadIdx.x / 32;
+        int lane_id = threadIdx.x % 32;
+        if (lane_id == 0) {
+            block_counts[warp_id] = warp_count;
+        }
+
+        __syncthreads();
+
+        for (int offset = (TPB / 32) / 2; offset > 0; offset >>= 1) {
+            if (lane_id == 0 && warp_id < offset && tid + offset < size) {
+                block_counts[warp_id] += block_counts[warp_id + offset];
+            }
+            __syncthreads();
+        }
+
+        if(threadIdx.x == 0) {
+            atomicAdd(count, block_counts[threadIdx.x]);
+        }
     }
     
 }
