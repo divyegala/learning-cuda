@@ -27,9 +27,6 @@ inline int count_if(T* arr, int size, CountIfOp count_if_op) {
 
     common::_prep_count_if<TPB> (&count_d, N_BLK, size);
 
-    std:: cout << "TPB: " << TPB << "\n";
-    std:: cout << "N_BLK: " << N_BLK << "\n";
-    std:: cout << "size: " << size << "\n";
     detail::count_kernel<<<N_BLK, TPB>>> (arr, size, count_d, count_if_op);
 
     common::_finish_count_if(&count_d, count_h);

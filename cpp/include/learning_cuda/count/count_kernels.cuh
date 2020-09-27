@@ -29,7 +29,7 @@ __global__
 void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
-    __shared__ int local_count_array[TPB];
+    __shared__ unsigned int local_count_array[TPB];
 
     if (tid < size) {
         if (count_if_op(arr[tid])) {
@@ -38,19 +38,19 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
         else {
             local_count_array[threadIdx.x] = 0;
         }
-    }
 
-    __syncthreads();
+        __syncthreads();
 
-    if (tid < size) {
-        for (int offset = blockDim.x / 2; offset > 0; offset /=2 ) {
-            local_count_array[threadIdx.x] += local_count_array[threadIdx.x + offset];
-            __syncthreads();
+        for (int offset = blockDim.x / 2; offset > 0; offset >>=1 ) {
+            if (threadIdx.x < offset && tid + offset < size) {
+                local_count_array[threadIdx.x] += local_count_array[threadIdx.x + offset];
+                __syncthreads();
+            }
         }
-    }
 
-    if (threadIdx.x == 0) {
-        atomicAdd(count, local_count_array[threadIdx.x]);
+        if(threadIdx.x == 0) {
+            atomicAdd(count, local_count_array[threadIdx.x]);
+        }
     }
 }
 
