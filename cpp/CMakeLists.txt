@@ -87,3 +87,10 @@ add_executable(count
     src/count/count.cu)
 
 target_include_directories(count PRIVATE ${LEARNING_CUDA_INCLUDE_DIRECTORIES})
+
+##############################################################################
+# - build sparse/norm ------------------------------------------------------------
+add_executable(sparse_norm
+    src/sparse/norm/norm.cu)
+
+target_include_directories(sparse_norm PRIVATE ${LEARNING_CUDA_INCLUDE_DIRECTORIES})
