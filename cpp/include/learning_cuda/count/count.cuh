@@ -22,7 +22,7 @@ void _finish_count_if(int **count_d, int &count_h) {
 namespace naive {
 
 template <typename T, int TPB, typename CountIfOp>
-inline int count_if(T* arr, int size, CountIfOp count_if_op) {
+int count_if(T* arr, int size, CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
     common::_prep_count_if<TPB> (&count_d, N_BLK, size);
@@ -39,8 +39,7 @@ inline int count_if(T* arr, int size, CountIfOp count_if_op) {
 namespace manual_reduction {
 
 template <typename T, int TPB, typename CountIfOp>
-inline int count_if(T* arr, int size,
-                    CountIfOp count_if_op) {
+int count_if(T* arr, int size, CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
     common::_prep_count_if<TPB> (&count_d, N_BLK, size);
@@ -58,8 +57,7 @@ inline int count_if(T* arr, int size,
 namespace syncthreads_count_reduction {
 
 template <typename T, int TPB, typename CountIfOp>
-inline int count_if(T* arr, int size,
-                    CountIfOp count_if_op) {
+int count_if(T* arr, int size, CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
     common::_prep_count_if<TPB> (&count_d, N_BLK, size);
@@ -76,8 +74,7 @@ inline int count_if(T* arr, int size,
 namespace ballot_sync_reduction {
 
 template <typename T, int TPB, typename CountIfOp>
-inline int count_if(T* arr, int size,
-                    CountIfOp count_if_op) {
+int count_if(T* arr, int size, CountIfOp count_if_op) {
     int *count_d, count_h, N_BLK;
 
     common::_prep_count_if<TPB> (&count_d, N_BLK, size);

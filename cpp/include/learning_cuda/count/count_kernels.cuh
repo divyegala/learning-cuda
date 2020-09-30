@@ -102,25 +102,23 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
     // optimization for block reduction
     __shared__ int block_counts[TPB / 32];
 
-    if (tid < size) {
-        int warp_id = threadIdx.x / 32;
-        int lane_id = threadIdx.x % 32;
-        if (lane_id == 0) {
-            block_counts[warp_id] = warp_count;
-        }
+    int warp_id = threadIdx.x / 32;
+    int lane_id = threadIdx.x % 32;
+    if (lane_id == 0) {
+        block_counts[warp_id] = warp_count;
+    }
 
+    __syncthreads();
+
+    for (int offset = (TPB / 32) / 2; offset > 0; offset >>= 1) {
+        if (lane_id == 0 && warp_id < offset) {
+            block_counts[warp_id] += block_counts[warp_id + offset];
+        }
         __syncthreads();
+    }
 
-        for (int offset = (TPB / 32) / 2; offset > 0; offset >>= 1) {
-            if (lane_id == 0 && warp_id < offset && tid + offset < size) {
-                block_counts[warp_id] += block_counts[warp_id + offset];
-            }
-            __syncthreads();
-        }
-
-        if(threadIdx.x == 0) {
-            atomicAdd(count, block_counts[threadIdx.x]);
-        }
+    if(tid < size && threadIdx.x == 0) {
+        atomicAdd(count, block_counts[threadIdx.x]);
     }
     
 }
