@@ -10,11 +10,11 @@ void norm(csr_matrix_t<T>& csr_d, NormOp norm_op) {
 
     int N_BLK = std::ceil((float) csr_d.m / TPB);
 
-    detail::sum_kernel<T> <<<N_BLK, TPB>>> (thrust::raw_pointer_cast(csr_d.data.data()),
-                                            thrust::raw_pointer_cast(csr_d.indptr.data()),
-                                            csr_d.m,
-                                            thrust::raw_pointer_cast(row_sums_d.data()),
-                                            norm_op);
+    detail::norm_kernel<T> <<<N_BLK, TPB>>> (thrust::raw_pointer_cast(csr_d.data.data()),
+                                             thrust::raw_pointer_cast(csr_d.indptr.data()),
+                                             csr_d.m,
+                                             thrust::raw_pointer_cast(row_sums_d.data()),
+                                             norm_op);
 
     // Printing device vector
     // std::cout << "naive row sums: ";
@@ -33,11 +33,11 @@ void norm(csr_matrix_t<T>& csr_d, NormOp norm_op) {
 
     int N_BLK = csr_d.m;
 
-    detail::sum_kernel<T> <<<N_BLK, TPB>>> (thrust::raw_pointer_cast(csr_d.data.data()),
-                                            thrust::raw_pointer_cast(csr_d.indptr.data()),
-                                            csr_d.m,
-                                            thrust::raw_pointer_cast(row_sums_d.data()),
-                                            norm_op);
+    detail::norm_kernel<T, TPB> <<<N_BLK, TPB>>> (thrust::raw_pointer_cast(csr_d.data.data()),
+                                                  thrust::raw_pointer_cast(csr_d.indptr.data()),
+                                                  csr_d.m,
+                                                  thrust::raw_pointer_cast(row_sums_d.data()),
+                                                  norm_op);
 
     // Printing device vector
     // std::cout << "warp row sums: ";

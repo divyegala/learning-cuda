@@ -50,7 +50,7 @@ csr_matrix_t<T>* _random_device_csr(int m, int n, float density) {
 
 int main() {
 
-    csr_matrix_t<int> *csr_d = _random_device_csr<int>(1000, 250000, 0.1);
+    csr_matrix_t<int> *csr_d = _random_device_csr<int>(2000, 500000, 0.1);
 
     // std::cout << "CSR data: ";
     // thrust::copy(csr_d->data.begin(), csr_d->data.end(), std::ostream_iterator<int>(std::cout, " "));
