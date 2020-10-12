@@ -16,7 +16,7 @@ void _initialize_temps(T *data_d, int nx, int ny) {
 
 int main() {
 
-    int nx = 32, ny = 5;
+    int nx = 32, ny = 32;
     int NBLK = std::ceil((float) nx / 32);
 
     thrust::device_vector<double> data_d_old(nx * ny, 0);
@@ -29,13 +29,15 @@ int main() {
     _initialize_temps<<<NBLK, 32>>> (thrust::raw_pointer_cast(data_d_new.data()),
                                     nx, ny);
 
-    int iter = 1;
+    cudaDeviceSynchronize();
+    int iter = 3;
     double *data_old_ptr = thrust::raw_pointer_cast(data_d_old.data());
     double *data_new_ptr = thrust::raw_pointer_cast(data_d_new.data());
     naive::heat_diffusion<double, 16>(data_old_ptr,
                                       data_new_ptr,
                                       nx, ny, iter);
 
+    cudaDeviceSynchronize();
     // Printing device vector
     thrust::copy(data_d_new.begin(), data_d_new.end(),
                  std::ostream_iterator<int>(std::cout, " "));

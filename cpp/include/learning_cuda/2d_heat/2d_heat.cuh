@@ -19,12 +19,11 @@ void heat_diffusion(T *data_d_old, T *data_d_new, int nx, int ny, int iter) {
         detail::heat_kernel<T, TPB><<<grid_size, block_size>>> (data_d_new,
                                                                 data_d_old,
                                                                 nx, ny);
-
+        cudaDeviceSynchronize();
         detail::heat_kernel<T, TPB><<<grid_size, block_size>>> (data_d_old,
                                                                 data_d_new,
                                                                 nx, ny);
     }
-
 
 }
 
