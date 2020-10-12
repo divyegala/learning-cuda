@@ -16,31 +16,45 @@ void _initialize_temps(T *data_d, int nx, int ny) {
 
 int main() {
 
-    int nx = 32, ny = 32;
+    int nx = 10, ny = 3;
     int NBLK = std::ceil((float) nx / 32);
+    int iter = 2;
 
+    // naive
     thrust::device_vector<double> data_d_old(nx * ny, 0);
 
     _initialize_temps<<<NBLK, 32>>> (thrust::raw_pointer_cast(data_d_old.data()),
                                      nx, ny);
 
-    thrust::device_vector<double> data_d_new(nx * ny, 0);
-
-    _initialize_temps<<<NBLK, 32>>> (thrust::raw_pointer_cast(data_d_new.data()),
-                                    nx, ny);
+    thrust::device_vector<double> data_d_new = data_d_old;
 
     cudaDeviceSynchronize();
-    int iter = 3;
-    double *data_old_ptr = thrust::raw_pointer_cast(data_d_old.data());
-    double *data_new_ptr = thrust::raw_pointer_cast(data_d_new.data());
-    naive::heat_diffusion<double, 16>(data_old_ptr,
-                                      data_new_ptr,
+    naive::heat_diffusion<double, 16>(thrust::raw_pointer_cast(data_d_old.data()),
+                                      thrust::raw_pointer_cast(data_d_new.data()),
                                       nx, ny, iter);
 
-    cudaDeviceSynchronize();
     // Printing device vector
+    std::cout << "\n Naive: \n";
     thrust::copy(data_d_new.begin(), data_d_new.end(),
-                 std::ostream_iterator<int>(std::cout, " "));
+                 std::ostream_iterator<double>(std::cout, " "));
+
+    // shared_global
+    thrust::device_vector<double> data_d_old_sg(nx * ny, 0);
+
+    _initialize_temps<<<NBLK, 32>>> (thrust::raw_pointer_cast(data_d_old_sg.data()),
+                                     nx, ny);
+
+    thrust::device_vector<double> data_d_new_sg = data_d_old_sg;
+
+    cudaDeviceSynchronize();
+    shared_global::heat_diffusion<double, 16>(thrust::raw_pointer_cast(data_d_old_sg.data()),
+                                              thrust::raw_pointer_cast(data_d_new_sg.data()),
+                                              nx, ny, iter);
+
+    // Printing device vector
+    std::cout << "\n Shared & Global: \n";
+    thrust::copy(data_d_new_sg.begin(), data_d_new_sg.end(),
+                 std::ostream_iterator<double>(std::cout, " "));
 
     return 0;
 }
