@@ -94,3 +94,10 @@ add_executable(sparse_norm
     src/sparse/norm/norm.cu)
 
 target_include_directories(sparse_norm PRIVATE ${LEARNING_CUDA_INCLUDE_DIRECTORIES})
+
+##############################################################################
+# - build 2d_heat ------------------------------------------------------------
+add_executable(2d_heat
+    src/2d_heat/2d_heat.cu)
+
+target_include_directories(2d_heat PRIVATE ${LEARNING_CUDA_INCLUDE_DIRECTORIES})
