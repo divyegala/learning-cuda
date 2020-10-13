@@ -36,27 +36,29 @@ int main() {
     
     int *rand_d_ptr = thrust::raw_pointer_cast(rand_d.data());
 
+    const int TPB = 128;
+
     cudaDeviceSynchronize();
-    int naive_count = naive::count_if<int, 64>(rand_d_ptr, n_elems,
+    int naive_count = naive::count_if<int, TPB>(rand_d_ptr, n_elems,
                                                 is_greater_than_10);
 
     std::cout << "\nNaive Count: " << naive_count << std::endl;
 
     cudaDeviceSynchronize();
-    int man_count = manual_reduction::count_if<int, 64>(rand_d_ptr, n_elems,
+    int man_count = manual_reduction::count_if<int, TPB>(rand_d_ptr, n_elems,
                                                          is_greater_than_10);
 
     std::cout << "\nManual Reduction Count: " << man_count << std::endl;
 
     cudaDeviceSynchronize();
-    int syn_count = syncthreads_count_reduction::count_if<int, 64>(rand_d_ptr,
+    int syn_count = syncthreads_count_reduction::count_if<int, TPB>(rand_d_ptr,
                                                                    n_elems,
                                                                    is_greater_than_10);
 
     std::cout << "\nSyncthread Reduction Count: " << syn_count << std::endl;
 
     cudaDeviceSynchronize();
-    int bal_count = ballot_sync_reduction::count_if<int, 64>(rand_d_ptr, 
+    int bal_count = ballot_sync_reduction::count_if<int, TPB>(rand_d_ptr, 
                                                              n_elems,
                                                              is_greater_than_10);
 

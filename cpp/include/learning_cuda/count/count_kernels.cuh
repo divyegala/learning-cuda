@@ -11,7 +11,7 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
     if (tid < size) {
-
+        // global memory, hence atomics
         if (count_if_op(arr[tid])) {
             atomicAdd(count, 1);
         }
@@ -32,6 +32,7 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
     __shared__ int local_count_array[TPB];
 
     if (tid < size) {
+        // set if op in shared memory
         if (count_if_op(arr[tid])) {
             local_count_array[threadIdx.x] = 1;
         }
@@ -41,6 +42,9 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
 
         __syncthreads();
 
+        // manual reduction within block between first half 
+        // and second half
+        // note format of reduction to enable SIMD
         for (int offset = blockDim.x / 2; offset > 0; offset >>=1 ) {
             if (threadIdx.x < offset && tid + offset < size) {
                 local_count_array[threadIdx.x] += local_count_array[threadIdx.x + offset];
@@ -67,6 +71,7 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
 
     bool predicate = tid < size && count_if_op(arr[tid]);
 
+    // block level primitive
     int block_count = __syncthreads_count(predicate);
 
     if (threadIdx.x == 0) {
@@ -90,26 +95,30 @@ void count_kernel(T* arr, int size, int *count, CountIfOp count_if_op) {
 
     bool predicate = tid < size && count_if_op(arr[tid]);
 
+    // find participating warps in predicate
+    // FULL_MASK is 32 bit set
     unsigned ballot_mask = __ballot_sync(FULL_MASK, predicate);
-    int warp_count = __popc(ballot_mask);
+    int warp_count = __popc(ballot_mask); // counts set bits
 
-    // global atomics
-    // if(threadIdx.x == 0) {
+    // global memory atomics
+    // if (threadIdx.x % 32 == 0) {
     //     atomicAdd(count, warp_count);
     // }
 
-
+    // shared memory of size number of warps per block
     // optimization for block reduction
     __shared__ int block_counts[TPB / 32];
 
     int warp_id = threadIdx.x / 32;
     int lane_id = threadIdx.x % 32;
     if (lane_id == 0) {
+        // set local warp count in smem
         block_counts[warp_id] = warp_count;
     }
 
     __syncthreads();
 
+    // recall reduction from earlier
     for (int offset = (TPB / 32) / 2; offset > 0; offset >>= 1) {
         if (lane_id == 0 && warp_id < offset) {
             block_counts[warp_id] += block_counts[warp_id + offset];
